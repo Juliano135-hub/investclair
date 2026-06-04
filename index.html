@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvestClair</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-soft: #f4f6f8;
+    --border: #e8ecef;
+    --ink: #0a0e14;
+    --ink-soft: #5b6573;
+    --ink-faint: #9aa4b2;
+    --green: #1ecb7b;
+    --green-soft: #e6f9f0;
+    --red: #f0455c;
+    --red-soft: #fdebee;
+    --blue: #3d5afe;
+    --amber: #f5a623;
+    --shadow: 0 1px 3px rgba(10,14,20,0.04), 0 8px 24px rgba(10,14,20,0.04);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .app { max-width: 480px; margin: 0 auto; padding: 24px 18px 100px; position: relative; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .brand { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand b { color: var(--green); }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--green), #15b86c); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; }
+  .hero { margin-bottom: 24px; }
+  .hero-label { font-size: 13px; color: var(--ink-faint); font-weight: 600; margin-bottom: 6px; }
+  .hero-value { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .hero-change { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 14px; font-weight: 700; padding: 5px 12px; border-radius: 100px; background: var(--green-soft); color: var(--green); }
+  .tabs { display: flex; gap: 4px; background: var(--surface-soft); padding: 4px; border-radius: 14px; margin-bottom: 22px; }
+  .tab { flex: 1; text-align: center; padding: 9px 2px; font-size: 11px; font-weight: 700; color: var(--ink-faint); border-radius: 9px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); border: none; background: transparent; font-family: inherit; }
+  .tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(10,14,20,0.08); }
+  .card { background: var(--surface); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+  .gauge-wrap { display: flex; align-items: center; gap: 22px; }
+  .gauge { position: relative; width: 104px; height: 104px; flex-shrink: 0; }
+  .gauge-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gauge-num b { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .gauge-num span { font-size: 10px; color: var(--ink-faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .gauge-desc { flex: 1; }
+  .gauge-desc h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .gauge-desc p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .mini-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .mini { background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+  .mini-label { font-size: 11px; color: var(--ink-faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+  .mini-val { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .mini-foot { font-size: 11.5px; color: var(--ink-soft); font-weight: 600; margin-top: 4px; }
+  .alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: 14px; margin-bottom: 10px; align-items: flex-start; }
+  .alert-ico { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .alert.warn { background: #fff8ec; } .alert.warn .alert-ico { background: #fdedd0; }
+  .alert.danger { background: var(--red-soft); } .alert.danger .alert-ico { background: #fbd5db; }
+  .alert.good { background: var(--green-soft); } .alert.good .alert-ico { background: #c9f2dd; }
+  .alert-body { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); padding-top: 5px; }
+  .alert-body b { color: var(--ink); font-weight: 700; }
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut { width: 120px; height: 120px; flex-shrink: 0; }
+  .legend { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 9px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .legend-pct { font-size: 12.5px; font-weight: 700; }
+  .pos { display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .pos:last-child { border-bottom: none; }
+  .pos-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; color: #fff; }
+  .pos-main { flex: 1; min-width: 0; }
+  .pos-name { font-size: 14.5px; font-weight: 700; }
+  .pos-tag { font-size: 11px; color: var(--ink-faint); font-weight: 600; margin-top: 2px; }
+  .pos-right { text-align: right; }
+  .pos-val { font-size: 14px; font-weight: 700; }
+  .pos-perf { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .pos-perf.up { color: var(--green); } .pos-perf.down { color: var(--red); }
+  .pos { position: relative; }
+  .pos-del { width: 26px; height: 26px; border-radius: 8px; border: none; background: var(--surface-soft); color: var(--ink-faint); font-size: 18px; line-height: 1; cursor: pointer; margin-left: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s, background 0.2s, color 0.2s; font-family: inherit; }
+  .pos:hover .pos-del { opacity: 1; }
+  .pos-del:hover { background: var(--red-soft); color: var(--red); }
+  @media (hover: none) { .pos-del { opacity: 1; } }
+  .div-item { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .div-item:last-child { border-bottom: none; }
+  .div-left { display: flex; align-items: center; gap: 12px; }
+  .div-name { font-size: 14px; font-weight: 700; }
+  .div-date { font-size: 11.5px; color: var(--ink-faint); font-weight: 600; margin-top: 2px; }
+  .div-amt { font-size: 15px; font-weight: 800; color: var(--green); }
+  .sim-field { margin-bottom: 18px; }
+  .sim-field label { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .sim-field label b { color: var(--green); font-weight: 800; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 6px; background: var(--surface-soft); outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--green); cursor: pointer; box-shadow: 0 2px 8px rgba(30,203,123,0.4); border: 3px solid #fff; }
+  .sim-result { background: linear-gradient(135deg, #0a0e14, #1a2030); border-radius: 18px; padding: 22px; color: #fff; margin-top: 8px; }
+  .sim-result .r-label { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
+  .sim-result .r-big { font-size: 34px; font-weight: 800; letter-spacing: -1px; margin: 6px 0 2px; }
+  .sim-result .r-sub { font-size: 13px; color: var(--green); font-weight: 700; }
+  .sim-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 0; }
+  .add-fields { display: flex; flex-direction: column; gap: 12px; }
+  .ff label { display: block; font-size: 11px; color: var(--ink-faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+  .ff input, .ff select { width: 100%; background: var(--surface-soft); border: 1.5px solid transparent; border-radius: 12px; padding: 12px 14px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .ff input:focus, .ff select:focus { border-color: var(--green); background: #fff; }
+  .ff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn { width: 100%; background: var(--ink); color: #fff; border: none; border-radius: 14px; padding: 15px; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: transform 0.15s; }
+  .btn:active { transform: scale(0.98); }
+  .btn.green { background: var(--green); }
+  .view { display: none; animation: fade 0.35s ease; }
+  .view.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .empty { text-align: center; padding: 40px 20px; color: var(--ink-faint); font-size: 13px; font-weight: 600; }
+  footer { text-align: center; font-size: 11px; color: var(--ink-faint); margin-top: 24px; font-weight: 600; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">Invest<b>Clair</b></div>
+    <div class="avatar">T</div>
+  </div>
+  <div class="hero">
+    <div class="hero-label">Patrimoine total</div>
+    <div class="hero-value" id="heroValue">—</div>
+    <div class="hero-change" id="heroChange">—</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-view="overview" onclick="switchTab(this)">Portfolio</button>
+    <button class="tab" data-view="evolution" onclick="switchTab(this)">Évolution</button>
+    <button class="tab" data-view="dividends" onclick="switchTab(this)">Dividendes</button>
+    <button class="tab" data-view="goals" onclick="switchTab(this)">Objectifs</button>
+    <button class="tab" data-view="simulator" onclick="switchTab(this)">Liberté</button>
+  </div>
+
+  <div class="view active" id="view-overview">
+    <div class="card" id="apiCard" style="padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700" id="apiStatusTitle">Prix en temps réel</div>
+          <div style="font-size:11.5px;color:var(--ink-faint);font-weight:600;margin-top:2px" id="apiStatusSub">Connecte ta clé Finnhub gratuite</div>
+        </div>
+        <button class="btn" style="width:auto;margin:0;padding:9px 16px;font-size:12.5px" onclick="toggleApiPanel()" id="apiToggleBtn">Connecter</button>
+      </div>
+      <div id="apiPanel" style="display:none;margin-top:14px">
+        <div class="ff" style="margin-bottom:10px">
+          <label>Clé API Finnhub</label>
+          <input type="text" id="apiKeyInput" placeholder="Colle ta clé ici">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn green" style="margin:0;padding:11px" onclick="saveApiKey()">Enregistrer & actualiser</button>
+          <button class="btn" style="margin:0;padding:11px;width:auto;background:var(--surface-soft);color:var(--ink-soft)" onclick="refreshPrices()">↻ Actualiser</button>
+        </div>
+        <div style="font-size:11px;color:var(--ink-faint);font-weight:600;margin-top:10px;line-height:1.5">Clé gratuite sur finnhub.io. Stockée uniquement dans ton navigateur, jamais partagée. Renseigne un symbole boursier (ex: AAPL, MSFT) sur chaque action pour récupérer son prix.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Score de diversification</div>
+        <div class="card-sub" id="scoreSubText">—</div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg width="104" height="104" style="transform:rotate(-90deg)">
+            <circle cx="52" cy="52" r="46" fill="none" stroke="#eef1f4" stroke-width="10"/>
+            <circle id="gaugeArc" cx="52" cy="52" r="46" fill="none" stroke="var(--green)" stroke-width="10" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.16,1,0.3,1)"/>
+          </svg>
+          <div class="gauge-num"><b id="gaugeNum">0</b><span>/ 100</span></div>
+        </div>
+        <div class="gauge-desc">
+          <h4 id="gaugeTitle">—</h4>
+          <p id="gaugeText">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="mini-row">
+      <div class="mini">
+        <div class="mini-label">Position max</div>
+        <div class="mini-val" id="maxConc">—</div>
+        <div class="mini-foot" id="maxConcName">—</div>
+      </div>
+      <div class="mini">
+        <div class="mini-label">Nb de positions</div>
+        <div class="mini-val" id="posCount">—</div>
+        <div class="mini-foot" id="sectorCount">—</div>
+      </div>
+    </div>
+    <div id="alertsBox"></div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Par type d'actif</div></div>
+      <div class="donut-wrap">
+        <svg class="donut" id="donutType" viewBox="0 0 42 42"></svg>
+        <div class="legend" id="legendType"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Par secteur</div></div>
+      <div class="donut-wrap">
+        <svg class="donut" id="donutSector" viewBox="0 0 42 42"></svg>
+        <div class="legend" id="legendSector"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Mes positions</div>
+        <div class="card-sub" id="accountTag">—</div>
+      </div>
+      <div id="posList"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">+ Ajouter une position</div></div>
+      <div class="add-fields">
+        <div class="ff"><label>Nom de l'actif</label><input type="text" id="fName" placeholder="ex: Apple"></div>
+        <div class="ff-row">
+          <div class="ff"><label>Symbole boursier (optionnel)</label><input type="text" id="fSymbol" placeholder="ex: AAPL"></div>
+          <div class="ff"><label>Quantité</label><input type="number" id="fQty" placeholder="1" step="any"></div>
+        </div>
+        <div class="ff-row">
+          <div class="ff"><label>Valeur (€)</label><input type="number" id="fValue" placeholder="200"></div>
+          <div class="ff"><label>Performance (%)</label><input type="number" id="fPerf" placeholder="0"></div>
+        </div>
+        <div class="ff-row">
+          <div class="ff"><label>Type</label>
+            <select id="fType">
+              <option value="ETF">ETF</option>
+              <option value="Action Tech">Action Tech</option>
+              <option value="Action Énergie">Action Énergie</option>
+              <option value="Action Santé">Action Santé</option>
+              <option value="Action Conso">Action Conso</option>
+              <option value="Action Autre">Action Autre</option>
+            </select>
+          </div>
+          <div class="ff"><label>Compte</label>
+            <select id="fAccount">
+              <option value="Trade Republic">Trade Republic</option>
+              <option value="Interactive Brokers">IBKR</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn green" onclick="addPosition()">Ajouter au portefeuille</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-evolution">
+    <div class="mini-row">
+      <div class="mini">
+        <div class="mini-label">Investi total</div>
+        <div class="mini-val" id="evoInvested">—</div>
+        <div class="mini-foot">Capital de départ estimé</div>
+      </div>
+      <div class="mini">
+        <div class="mini-label">Plus-value</div>
+        <div class="mini-val" id="evoGain" style="color:var(--green)">—</div>
+        <div class="mini-foot" id="evoGainPct">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Évolution du portefeuille</div><div class="card-sub">Simulée sur 12 mois</div></div>
+      <svg id="evoChart" viewBox="0 0 320 160" style="width:100%;height:auto"></svg>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);font-weight:600;margin-top:6px" id="evoLabels"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Snapshots enregistrés</div><div class="card-sub" id="snapCount">—</div></div>
+      <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:14px">Enregistre la valeur d'aujourd'hui pour suivre ta vraie progression au fil du temps.</p>
+      <button class="btn green" onclick="saveSnapshot()">📸 Enregistrer la valeur du jour</button>
+      <div id="snapList" style="margin-top:14px"></div>
+    </div>
+    <footer>La courbe pré-remplie est une simulation. Tes snapshots réels la remplaceront progressivement.</footer>
+  </div>
+
+  <div class="view" id="view-goals">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Mon objectif de patrimoine</div></div>
+      <div class="sim-field"><label>Objectif visé <b id="lblGoal">10 000 €</b></label><input type="range" id="goalTarget" min="1000" max="100000" step="1000" value="10000" oninput="renderGoals()"></div>
+      <div style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:var(--ink-soft)">Progression</span>
+          <span style="font-size:20px;font-weight:800" id="goalPct">—</span>
+        </div>
+        <div style="height:12px;background:var(--surface-soft);border-radius:8px;overflow:hidden">
+          <div id="goalBar" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#1ecb7b,#15b86c);width:0%;transition:width 1s cubic-bezier(0.16,1,0.3,1)"></div>
+        </div>
+        <div style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:10px" id="goalRemain">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Jalons</div></div>
+      <div id="milestones"></div>
+    </div>
+    <footer>Définis un cap, suis ta progression. Pas un conseil en investissement.</footer>
+  </div>
+
+  <div class="view" id="view-dividends">
+    <div class="mini-row">
+      <div class="mini">
+        <div class="mini-label">Dividendes / an</div>
+        <div class="mini-val" id="divAnnual" style="color:var(--green)">—</div>
+        <div class="mini-foot">Estimation brute</div>
+      </div>
+      <div class="mini">
+        <div class="mini-label">Rendement moy.</div>
+        <div class="mini-val" id="divYield">—</div>
+        <div class="mini-foot">Sur le portefeuille</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Revenu mensuel estimé</div></div>
+      <div style="font-size:40px;font-weight:800;letter-spacing:-1.5px;color:var(--green)" id="divMonthly">—</div>
+      <div style="font-size:13px;color:var(--ink-soft);font-weight:600;margin-top:6px">Le premier pas vers le complément de salaire que tu vises.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Détail par position</div></div>
+      <div id="divList"></div>
+    </div>
+    <footer>Rendements estimés à partir de moyennes de marché. Pas un conseil en investissement.</footer>
+  </div>
+
+  <div class="view" id="view-simulator">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Vivre de mes dividendes</div></div>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:22px">Combien te faut-il pour ne plus dépendre d'un salaire ? Ajuste les curseurs.</p>
+      <div class="sim-field"><label>Revenu mensuel souhaité <b id="lblIncome">1 500 €</b></label><input type="range" id="simIncome" min="500" max="5000" step="100" value="1500" oninput="runSim()"></div>
+      <div class="sim-field"><label>Rendement dividende annuel <b id="lblYield">3,5 %</b></label><input type="range" id="simYield" min="2" max="7" step="0.5" value="3.5" oninput="runSim()"></div>
+      <div class="sim-field"><label>Épargne mensuelle <b id="lblSave">300 €</b></label><input type="range" id="simSave" min="50" max="2000" step="50" value="300" oninput="runSim()"></div>
+      <div class="sim-field"><label>Croissance annuelle du capital <b id="lblGrowth">5 %</b></label><input type="range" id="simGrowth" min="2" max="10" step="0.5" value="5" oninput="runSim()"></div>
+      <div class="sim-result">
+        <div class="r-label">Capital nécessaire</div>
+        <div class="r-big" id="simCapital">—</div>
+        <div class="r-sub" id="simIncomeEcho">—</div>
+        <div class="sim-divider"></div>
+        <div class="r-label">Temps estimé pour y arriver</div>
+        <div class="r-big" id="simYears" style="font-size:28px">—</div>
+        <div class="r-sub" id="simStartEcho">—</div>
+      </div>
+    </div>
+    <footer>Simulation pédagogique. N'intègre ni inflation ni fiscalité. Pas un conseil en investissement.</footer>
+  </div>
+
+  <footer style="margin-top:28px">InvestClair — Je documente, je ne conseille pas.</footer>
+</div>
+
+<script>
+  const PALETTE = ['#1ecb7b','#3d5afe','#f5a623','#7c5cfc','#f0455c','#00bcd4','#ff7043'];
+
+  const DEFAULT_PORTFOLIO = [
+    { name:'Core MSCI World', value:394.78, type:'ETF', sector:'Monde', perf:8.16, account:'Trade Republic', divYield:1.8, symbol:'', qty:0 },
+    { name:'NVIDIA', value:253.16, type:'Action Tech', sector:'Technologie', perf:18.30, account:'Trade Republic', divYield:0.03, symbol:'NVDA', qty:0 },
+    { name:'Microsoft', value:193.28, type:'Action Tech', sector:'Technologie', perf:8.85, account:'Trade Republic', divYield:0.72, symbol:'MSFT', qty:0 },
+    { name:'Alphabet', value:110.63, type:'Action Tech', sector:'Technologie', perf:8.46, account:'Trade Republic', divYield:0.45, symbol:'GOOGL', qty:0 },
+    { name:'TotalEnergies', value:57.86, type:'Action Énergie', sector:'Énergie', perf:34.74, account:'Trade Republic', divYield:5.2, symbol:'TTE', qty:0 },
+    { name:'Abivax', value:13.79, type:'Action Santé', sector:'Santé', perf:-37.33, account:'Trade Republic', divYield:0, symbol:'ABVX', qty:0 },
+  ];
+
+  const STORAGE_KEY = 'investclair_portfolio_v1';
+
+  // Charge le portefeuille sauvegardé, sinon utilise les données par défaut
+  function loadPortfolio(){
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) { /* localStorage indisponible (ex: aperçu) — on retombe sur le défaut */ }
+    return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO));
+  }
+
+  // Sauvegarde le portefeuille dans le navigateur
+  function savePortfolio(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
+    } catch(e) { /* aperçu sans stockage — sera fonctionnel une fois en ligne */ }
+  }
+
+  let portfolio = loadPortfolio();
+
+  const fmt = (n,d=0) => n.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const eur = (n,d=0) => fmt(n,d)+' €';
+  const total = () => portfolio.reduce((s,p)=>s+p.value,0);
+  const initials = name => name.replace(/[^a-zA-ZÀ-ÿ ]/g,'').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const colorFor = i => PALETTE[i % PALETTE.length];
+
+  function computeScore(){
+    const t=total(); if(!t) return 0;
+    const w=portfolio.map(p=>p.value/t);
+    const hhi=w.reduce((s,x)=>s+x*x,0);
+    const sectors=[...new Set(portfolio.map(p=>p.sector))].length;
+    let s=Math.max(0,(1-hhi)*60)+Math.min(sectors*8,24)+(portfolio.some(p=>p.type==='ETF')?16:0);
+    return Math.round(Math.min(s,100));
+  }
+  function scoreInfo(s){
+    if(s>=75) return {t:'Bien diversifié',d:'Ton risque est réparti sur plusieurs actifs et secteurs.',c:'var(--green)'};
+    if(s>=50) return {t:'Diversification moyenne',d:'Quelques positions pèsent lourd. Marge de progression.',c:'var(--amber)'};
+    return {t:'Portefeuille concentré',d:"Ton risque dépend de peu d'actifs. Pense à élargir.",c:'var(--red)'};
+  }
+  function groupBy(key){
+    const t=total(); const m={};
+    portfolio.forEach(p=>m[p[key]]=(m[p[key]]||0)+p.value);
+    return Object.entries(m).map(([k,v])=>({name:k,value:v,pct:v/t*100})).sort((a,b)=>b.value-a.value);
+  }
+  function drawDonut(svgId,legendId,data){
+    const svg=document.getElementById(svgId); let offset=25; let html='';
+    svg.innerHTML='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eef1f4" stroke-width="6"/>';
+    data.forEach((d,i)=>{
+      svg.innerHTML+=`<circle cx="21" cy="21" r="15.9" fill="none" stroke="${colorFor(i)}" stroke-width="6" stroke-dasharray="${d.pct} ${100-d.pct}" stroke-dashoffset="${offset}" transform="rotate(-90 21 21)"/>`;
+      offset=(offset-d.pct+100)%100;
+      html+=`<div class="legend-item"><div class="legend-dot" style="background:${colorFor(i)}"></div><div class="legend-name">${d.name}</div><div class="legend-pct">${d.pct.toFixed(0)}%</div></div>`;
+    });
+    document.getElementById(legendId).innerHTML=html;
+  }
+  function buildAlerts(){
+    const t=total(); const out=[];
+    portfolio.forEach(p=>{ const w=p.value/t;
+      if(w>0.40) out.push({c:'danger',i:'⚠',m:`<b>${p.name}</b> pèse ${(w*100).toFixed(0)}% du portefeuille — concentration élevée.`});
+      else if(w>0.25) out.push({c:'warn',i:'◈',m:`<b>${p.name}</b> dépasse 25% — position à surveiller.`});
+    });
+    const tech=portfolio.filter(p=>p.sector==='Technologie').reduce((s,p)=>s+p.value,0)/t;
+    if(tech>0.45) out.push({c:'warn',i:'◈',m:`<b>${(tech*100).toFixed(0)}% en technologie</b> — forte exposition à un seul secteur.`});
+    if(portfolio.some(p=>p.type==='ETF')) out.push({c:'good',i:'✓',m:`Un <b>ETF diversifié</b> sert de socle — bonne base.`});
+    document.getElementById('alertsBox').innerHTML=out.map(a=>`<div class="alert ${a.c}"><div class="alert-ico">${a.i}</div><div class="alert-body">${a.m}</div></div>`).join('');
+  }
+  function posColor(type){
+    if(type==='ETF') return 'linear-gradient(135deg,#1ecb7b,#15b86c)';
+    if(type.includes('Tech')) return 'linear-gradient(135deg,#3d5afe,#5c6bff)';
+    if(type.includes('Énergie')) return 'linear-gradient(135deg,#f5a623,#ff8c42)';
+    if(type.includes('Santé')) return 'linear-gradient(135deg,#7c5cfc,#9575ff)';
+    return 'linear-gradient(135deg,#5b6573,#7a8494)';
+  }
+  function renderOverview(){
+    const t=total();
+    document.getElementById('heroValue').textContent=eur(t,2);
+    const wPerf=portfolio.reduce((s,p)=>s+p.perf*(p.value/t),0);
+    const hc=document.getElementById('heroChange');
+    hc.textContent=`${wPerf>=0?'▲':'▼'} ${Math.abs(wPerf).toFixed(2)}% depuis l'achat`;
+    hc.style.background=wPerf>=0?'var(--green-soft)':'var(--red-soft)';
+    hc.style.color=wPerf>=0?'var(--green)':'var(--red)';
+    const s=computeScore(); const info=scoreInfo(s);
+    const arc=document.getElementById('gaugeArc');
+    arc.style.strokeDashoffset=289-(289*s/100); arc.style.stroke=info.c;
+    document.getElementById('gaugeNum').textContent=s;
+    document.getElementById('gaugeTitle').textContent=info.t;
+    document.getElementById('gaugeText').textContent=info.d;
+    document.getElementById('scoreSubText').textContent=info.t;
+    const maxP=portfolio.reduce((a,b)=>a.value>b.value?a:b,{value:0,name:'—'});
+    document.getElementById('maxConc').textContent=(maxP.value/t*100).toFixed(0)+'%';
+    document.getElementById('maxConcName').textContent=maxP.name;
+    document.getElementById('posCount').textContent=portfolio.length;
+    document.getElementById('sectorCount').textContent=[...new Set(portfolio.map(p=>p.sector))].length+' secteurs';
+    buildAlerts();
+    drawDonut('donutType','legendType',groupBy('type'));
+    drawDonut('donutSector','legendSector',groupBy('sector'));
+    const accN=[...new Set(portfolio.map(p=>p.account))].length;
+    document.getElementById('accountTag').textContent=accN+(accN>1?' comptes':' compte');
+    document.getElementById('posList').innerHTML=portfolio.map((p,idx)=>{
+      const pct=(p.value/t*100).toFixed(1); const up=p.perf>=0;
+      return `<div class="pos"><div class="pos-ico" style="background:${posColor(p.type)}">${initials(p.name)}</div><div class="pos-main"><div class="pos-name">${p.name}</div><div class="pos-tag">${p.type} · ${pct}% · ${p.account}</div></div><div class="pos-right"><div class="pos-val">${eur(p.value,2)}</div><div class="pos-perf ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(p.perf).toFixed(2)}%</div></div><button class="pos-del" onclick="removePosition(${idx})" title="Supprimer">×</button></div>`;
+    }).join('');
+  }
+  function renderDividends(){
+    const t=total();
+    const annual=portfolio.reduce((s,p)=>s+p.value*(p.divYield/100),0);
+    document.getElementById('divAnnual').textContent=eur(annual,2);
+    document.getElementById('divYield').textContent=(annual/t*100).toFixed(2)+'%';
+    document.getElementById('divMonthly').textContent=eur(annual/12,2);
+    const withDiv=portfolio.filter(p=>p.divYield>0).sort((a,b)=>(b.value*b.divYield)-(a.value*a.divYield));
+    const months=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+    document.getElementById('divList').innerHTML=withDiv.length?withDiv.map((p,i)=>{
+      const amt=p.value*(p.divYield/100);
+      return `<div class="div-item"><div class="div-left"><div class="pos-ico" style="background:${posColor(p.type)};width:36px;height:36px;font-size:13px">${initials(p.name)}</div><div><div class="div-name">${p.name}</div><div class="div-date">Rendement ${p.divYield}% · prochain ~${months[(i*3)%12]}</div></div></div><div class="div-amt">+${eur(amt,2)}/an</div></div>`;
+    }).join(''):'<div class="empty">Aucune position ne verse de dividende significatif.</div>';
+  }
+  function runSim(){
+    const income=+document.getElementById('simIncome').value;
+    const yld=+document.getElementById('simYield').value;
+    const save=+document.getElementById('simSave').value;
+    const growth=+document.getElementById('simGrowth').value;
+    document.getElementById('lblIncome').textContent=fmt(income)+' €';
+    document.getElementById('lblYield').textContent=yld.toFixed(1).replace('.',',')+' %';
+    document.getElementById('lblSave').textContent=fmt(save)+' €';
+    document.getElementById('lblGrowth').textContent=growth.toFixed(0)+' %';
+    const capitalNeeded=(income*12)/(yld/100);
+    document.getElementById('simCapital').textContent=eur(capitalNeeded);
+    document.getElementById('simIncomeEcho').textContent=`pour ${eur(income)}/mois en dividendes`;
+    const start=total(); const r=growth/100/12; let months=0; let bal=start;
+    if(start<capitalNeeded){ while(bal<capitalNeeded&&months<1200){ bal=bal*(1+r)+save; months++; } }
+    const years=Math.floor(months/12); const remM=Math.round(months%12);
+    document.getElementById('simYears').textContent=months>=1200?'40+ ans':(years>0?`${years} an${years>1?'s':''} ${remM} mois`:`${remM} mois`);
+    document.getElementById('simStartEcho').textContent=`en partant de ${eur(start)} et ${eur(save)}/mois`;
+  }
+  function addPosition(){
+    const name=document.getElementById('fName').value.trim();
+    const value=parseFloat(document.getElementById('fValue').value);
+    const perf=parseFloat(document.getElementById('fPerf').value)||0;
+    const symbol=document.getElementById('fSymbol').value.trim().toUpperCase();
+    const qty=parseFloat(document.getElementById('fQty').value)||0;
+    const type=document.getElementById('fType').value;
+    const account=document.getElementById('fAccount').value;
+    if(!name||!value||value<=0) return;
+    const secMap={'ETF':'Monde','Action Tech':'Technologie','Action Énergie':'Énergie','Action Santé':'Santé','Action Conso':'Consommation','Action Autre':'Autre'};
+    const divMap={'ETF':1.8,'Action Tech':0.5,'Action Énergie':5,'Action Santé':2,'Action Conso':2.5,'Action Autre':2};
+    portfolio.push({name,value,type,sector:secMap[type],perf,account,divYield:divMap[type],symbol,qty});
+    ['fName','fValue','fPerf','fSymbol','fQty'].forEach(id=>document.getElementById(id).value='');
+    savePortfolio();
+    renderAll();
+  }
+  function removePosition(idx){
+    portfolio.splice(idx,1);
+    savePortfolio();
+    renderAll();
+  }
+  function switchTab(btn){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  }
+  /* ===== FINNHUB — PRIX TEMPS RÉEL ===== */
+  const API_KEY_STORE = 'investclair_finnhub_key';
+  function getApiKey(){ try { return localStorage.getItem(API_KEY_STORE) || ''; } catch(e){ return ''; } }
+  function toggleApiPanel(){
+    const p=document.getElementById('apiPanel');
+    p.style.display = p.style.display==='none' ? 'block' : 'none';
+    document.getElementById('apiKeyInput').value = getApiKey();
+  }
+  function saveApiKey(){
+    const k=document.getElementById('apiKeyInput').value.trim();
+    try { localStorage.setItem(API_KEY_STORE, k); } catch(e){}
+    refreshPrices();
+  }
+  function updateApiStatus(connected, msg){
+    document.getElementById('apiStatusTitle').textContent = connected ? 'Prix en temps réel · actif' : 'Prix en temps réel';
+    document.getElementById('apiStatusSub').textContent = msg;
+    document.getElementById('apiToggleBtn').textContent = connected ? 'Gérer' : 'Connecter';
+  }
+  async function refreshPrices(){
+    const key=getApiKey();
+    if(!key){ updateApiStatus(false,'Aucune clé enregistrée'); return; }
+    const withSym = portfolio.filter(p=>p.symbol && p.symbol.trim());
+    if(!withSym.length){ updateApiStatus(true,'Ajoute un symbole boursier à tes actions'); return; }
+    updateApiStatus(true,'Actualisation en cours…');
+    let ok=0;
+    for(const p of withSym){
+      try {
+        const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(p.symbol.trim())}&token=${key}`);
+        const d = await r.json();
+        if(d && typeof d.c==='number' && d.c>0){
+          // d.c = prix courant, d.dp = variation % du jour
+          if(p.qty && p.qty>0){ p.value = +(d.c * p.qty).toFixed(2); }
+          if(typeof d.dp==='number') p.perf = +d.dp.toFixed(2);
+          ok++;
+        }
+      } catch(e){ /* symbole invalide ou limite atteinte */ }
+    }
+    savePortfolio();
+    renderAll();
+    updateApiStatus(true, ok>0 ? `${ok} actif(s) mis à jour · ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}` : 'Aucune donnée reçue (vérifie la clé ou les symboles)');
+  }
+
+  /* ===== ÉVOLUTION + SNAPSHOTS ===== */
+  const SNAP_STORE='investclair_snapshots';
+  function loadSnaps(){ try { return JSON.parse(localStorage.getItem(SNAP_STORE))||[]; } catch(e){ return []; } }
+  function saveSnaps(s){ try { localStorage.setItem(SNAP_STORE, JSON.stringify(s)); } catch(e){} }
+  function saveSnapshot(){
+    const snaps=loadSnaps();
+    snaps.push({ date:new Date().toISOString(), value:+total().toFixed(2) });
+    saveSnaps(snaps);
+    renderEvolution();
+  }
+  function buildSeries(){
+    const snaps=loadSnaps();
+    if(snaps.length>=2) return snaps.map(s=>({label:new Date(s.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}), v:s.value}));
+    // sinon courbe simulée rétroactive sur 12 mois (croissance lissée + bruit léger)
+    const now=total(); const pts=[]; const months=['Jui','Aoû','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Jui'];
+    for(let i=0;i<12;i++){
+      const ratio=0.78 + (i/11)*0.22; const noise=1+(Math.sin(i*1.7)*0.015);
+      pts.push({label:months[i], v:+(now*ratio*noise).toFixed(2)});
+    }
+    pts[11].v=now;
+    return pts;
+  }
+  function renderEvolution(){
+    const series=buildSeries();
+    const vals=series.map(p=>p.v);
+    const min=Math.min(...vals)*0.97, max=Math.max(...vals)*1.02;
+    const W=320,H=160,pad=8;
+    const x=i=>pad+(i/(series.length-1))*(W-pad*2);
+    const y=v=>H-pad-((v-min)/(max-min))*(H-pad*2);
+    let line='', area=`M ${x(0)} ${y(vals[0])}`;
+    series.forEach((p,i)=>{ line+=(i?' L ':'M ')+x(i).toFixed(1)+' '+y(p.v).toFixed(1); if(i)area+=' L '+x(i).toFixed(1)+' '+y(p.v).toFixed(1); });
+    area+=` L ${x(series.length-1)} ${H-pad} L ${x(0)} ${H-pad} Z`;
+    const up=vals[vals.length-1]>=vals[0];
+    const col=up?'#1ecb7b':'#f0455c';
+    document.getElementById('evoChart').innerHTML=`
+      <defs><linearGradient id="evoGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity="0.18"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#evoGrad)"/>
+      <path d="${line}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${x(series.length-1).toFixed(1)}" cy="${y(vals[vals.length-1]).toFixed(1)}" r="4" fill="${col}"/>`;
+    const labelsEl=document.getElementById('evoLabels');
+    labelsEl.innerHTML=`<span>${series[0].label}</span><span>${series[Math.floor(series.length/2)].label}</span><span>${series[series.length-1].label}</span>`;
+
+    const invested=vals[0]; const gain=total()-invested;
+    document.getElementById('evoInvested').textContent=eur(invested);
+    const g=document.getElementById('evoGain'); g.textContent=(gain>=0?'+':'')+eur(gain,2); g.style.color=gain>=0?'var(--green)':'var(--red)';
+    document.getElementById('evoGainPct').textContent=(gain>=0?'+':'')+(gain/invested*100).toFixed(1)+'%';
+
+    const snaps=loadSnaps();
+    document.getElementById('snapCount').textContent=snaps.length+' enregistré'+(snaps.length>1?'s':'');
+    document.getElementById('snapList').innerHTML=snaps.length? [...snaps].reverse().slice(0,6).map(s=>`<div class="div-item"><div class="div-name">${new Date(s.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div><div class="div-amt" style="color:var(--ink)">${eur(s.value,2)}</div></div>`).join('') : '<div class="empty">Aucun snapshot. La courbe ci-dessus est simulée.</div>';
+  }
+
+  /* ===== OBJECTIFS ===== */
+  const GOAL_STORE='investclair_goal';
+  function renderGoals(){
+    const target=+document.getElementById('goalTarget').value;
+    try { localStorage.setItem(GOAL_STORE, target); } catch(e){}
+    document.getElementById('lblGoal').textContent=eur(target);
+    const cur=total(); const pct=Math.min(cur/target*100,100);
+    document.getElementById('goalPct').textContent=pct.toFixed(0)+'%';
+    document.getElementById('goalBar').style.width=pct+'%';
+    const remain=Math.max(target-cur,0);
+    document.getElementById('goalRemain').textContent= remain>0 ? `Encore ${eur(remain)} pour atteindre ton objectif.` : '🎉 Objectif atteint, bravo !';
+    const steps=[0.25,0.5,0.75,1];
+    document.getElementById('milestones').innerHTML=steps.map(st=>{
+      const amt=target*st; const reached=cur>=amt;
+      return `<div class="div-item"><div class="div-left"><div class="pos-ico" style="width:32px;height:32px;font-size:13px;background:${reached?'linear-gradient(135deg,#1ecb7b,#15b86c)':'var(--surface-soft)'};color:${reached?'#fff':'var(--ink-faint)'}">${reached?'✓':Math.round(st*100)+'%'}</div><div class="div-name" style="color:${reached?'var(--ink)':'var(--ink-faint)'}">${eur(amt)}</div></div><div class="div-date" style="margin:0">${reached?'Atteint':'À venir'}</div></div>`;
+    }).join('');
+  }
+
+  function renderAll(){ renderOverview(); renderEvolution(); renderDividends(); renderGoals(); runSim(); }
+  // init clé + objectif sauvegardés
+  (function initSaved(){
+    const k=getApiKey(); if(k) updateApiStatus(true,'Clé enregistrée · clique Actualiser');
+    try { const g=localStorage.getItem(GOAL_STORE); if(g) document.getElementById('goalTarget').value=g; } catch(e){}
+  })();
+  renderAll();
+</script>
+</body>
+</html>
